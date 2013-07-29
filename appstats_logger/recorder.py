@@ -94,17 +94,14 @@ class Recorder(object):
 
         if rpc is not None:
             with self._lock:
-                index = self.pending.get(rpc)
-                if index is not None:
-                    del self.pending[rpc]
-
-                    if 0 <= index < len(self.traces):
-                        trace = self.traces[index]
-                        trace.update({
-                            'duration': delta - trace['offset']
-                        })
-                        self.overhead += (time.time() - now)
-                        return
+                index = self.pending.pop(rpc, None)
+                if index is not None and (0 <= index <= len(self.traces)):
+                    trace = self.traces[index]
+                    trace.update({
+                        'duration': delta - trace['offset']
+                    })
+                    self.overhead += (time.time() - now)
+                    return
         else:
             with self._lock:
                 for trace in reversed(self.traces):
